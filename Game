@@ -2,14 +2,13 @@ package dev.kadenr.game;
 
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
 
 import dev.kadenr.game.display.Display;
 import dev.kadenr.game.gfx.Assets;
-import dev.kadenr.game.gfx.ImageLoader;
-import dev.kadenr.game.gfx.SpriteSheet;
+import dev.kadenr.game.states.GameState;
+import dev.kadenr.game.states.State;
 
-//your on episode 7 of codeNmore new 2D beginner game programming
+
 public class Game implements Runnable {
 	
 	private Display display;
@@ -23,7 +22,8 @@ public class Game implements Runnable {
 	private BufferStrategy bs;
 	private Graphics g;
 	
-
+	//States
+	private State gameState;
 	
 	//requirements of game
 	public Game(String title,int width, int height) {
@@ -36,11 +36,16 @@ public class Game implements Runnable {
 	private void inti() {
 		display = new Display(title, width, height);
 		Assets.init();
+		
+		gameState = new GameState();
+		State.setState(gameState);
 	}
+	
 	
 	//updates everything
 	private void tick() {
-		
+		if(State.getState() != null) 
+			State.getState().tick();
 	}
 	
 	//renders everything
@@ -56,7 +61,8 @@ public class Game implements Runnable {
 		
 		//StartDrawing
 		
-		g.drawImage(Assets.grass, 10, 10, null);
+		if(State.getState() != null) 
+			State.getState().render(g);
 		
 		//Ends drawing
 		bs.show();
@@ -69,9 +75,36 @@ public class Game implements Runnable {
 		
 		inti();
 		
+		int fps = 60;
+		//measures time in nanoseconds
+		double timePerTick = 1000000000/ fps;
+		double delta = 0;
+		long now;
+		//returns time in nanoseconds
+		long lastTime = System.nanoTime();
+		//fps counter
+		long timer = 0;
+		int ticks = 0;
+		
 		while(running) {
-			tick();
-			render();
+			now = System.nanoTime();
+			delta += (now - lastTime) / timePerTick;
+			timer += now - lastTime;
+			lastTime = now;
+			
+			if(delta >= 1) {
+				tick();
+				render();
+				ticks++;
+				delta--;
+			}
+			
+			//checks fps
+			if(timer>= 1000000000) {
+				System.out.println("Ticks and Frames:" + ticks);
+				ticks = 0;
+				timer = 0;
+			}
 		}
 		//just in case it didn't stop
 		stop();
