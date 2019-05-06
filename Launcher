@@ -1,0 +1,12 @@
+package dev.kadenr.game;
+
+import dev.kadenr.game.display.*;
+
+public class Launcher {
+
+	public static void main(String[] args) {
+		Game game = new Game("Title Game!", 200, 200);
+		game.start();
+	}
+
+}
