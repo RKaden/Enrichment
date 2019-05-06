@@ -1,0 +1,103 @@
+package dev.kadenr.game;
+
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+
+import dev.kadenr.game.display.Display;
+import dev.kadenr.game.gfx.Assets;
+import dev.kadenr.game.gfx.ImageLoader;
+import dev.kadenr.game.gfx.SpriteSheet;
+
+//your on episode 7 of codeNmore new 2D beginner game programming
+public class Game implements Runnable {
+	
+	private Display display;
+	public int width, height;
+	public String title;
+	
+	private boolean running = false;
+	//thread variable makes own little program within big program
+	private Thread thread;
+	
+	private BufferStrategy bs;
+	private Graphics g;
+	
+
+	
+	//requirements of game
+	public Game(String title,int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.title = title;
+		
+	}
+	//Initializes all graphics.
+	private void inti() {
+		display = new Display(title, width, height);
+		Assets.init();
+	}
+	
+	//updates everything
+	private void tick() {
+		
+	}
+	
+	//renders everything
+	private void render() {
+		bs = display.getCanvas().getBufferStrategy();
+		if(bs == null) {
+			display.getCanvas().createBufferStrategy(3);
+			return;
+		}
+		g = bs.getDrawGraphics();
+		//Clear the screen
+		g.clearRect(0, 0, width, height);
+		
+		//StartDrawing
+		
+		g.drawImage(Assets.grass, 10, 10, null);
+		
+		//Ends drawing
+		bs.show();
+		g.dispose();
+		
+	}
+	
+	//must be in program to have thread
+	public void run() {
+		
+		inti();
+		
+		while(running) {
+			tick();
+			render();
+		}
+		//just in case it didn't stop
+		stop();
+	}
+	
+	//starts thread
+	public synchronized void start() {
+		//stops program from starting twice and giving bunch of errors
+		if(running)
+			return;
+		running = true;
+		//runs this class that's why has this within the new thread
+		thread = new Thread(this);
+		thread.start();
+	}
+	
+	public synchronized void stop() {
+		//stops program from stopping twice and giving bunch of errors
+		if(!running)
+			return;
+		running = false;
+		//must be connected to a try catch statement
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+}
